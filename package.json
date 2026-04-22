@@ -1,0 +1,41 @@
+{
+  "name": "@asl-throne/gcc-intelligence-mcp",
+  "version": "0.1.0",
+  "description": "MCP server providing GCC regulatory intelligence, ZATCA e-invoicing, Arabic NLP, and compliance tools for AI agents",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "gcc-intelligence-mcp": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test src/**/*.test.js"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "gcc",
+    "zatca",
+    "arabic",
+    "nlp",
+    "compliance",
+    "e-invoicing",
+    "saudi-arabia",
+    "uae",
+    "kuwait",
+    "bahrain",
+    "oman",
+    "qatar",
+    "corporate-tax",
+    "ai-agent",
+    "regulatory"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  }
+}
