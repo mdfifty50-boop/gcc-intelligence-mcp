@@ -1,0 +1,85 @@
+{
+  "serverInfo": {
+    "name": "gcc-intelligence-mcp",
+    "version": "0.1.0",
+    "description": "GCC regulatory intelligence for AI agents — ZATCA e-invoicing, Arabic NLP, UAE Corporate Tax, and compliance tools for Saudi Arabia, UAE, Kuwait, Bahrain, Oman, and Qatar",
+    "author": "THRONE AI",
+    "license": "MIT",
+    "homepage": "https://github.com/mdfifty50-boop/gcc-intelligence-mcp",
+    "repository": "https://github.com/mdfifty50-boop/gcc-intelligence-mcp"
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "zatca_generate_invoice_xml",
+        "description": "Generate ZATCA-compliant UBL 2.1 e-invoice XML with QR code for Saudi Arabia Phase 2"
+      },
+      {
+        "name": "zatca_validate_invoice",
+        "description": "Validate invoice XML against ZATCA Phase 1 or Phase 2 requirements"
+      },
+      {
+        "name": "zatca_get_wave_status",
+        "description": "Check ZATCA e-invoicing wave status and deadlines by revenue threshold"
+      },
+      {
+        "name": "gcc_validate_vat",
+        "description": "Validate VAT/TIN numbers for all 6 GCC countries"
+      },
+      {
+        "name": "gcc_lookup_company",
+        "description": "Look up GCC company by commercial registration number"
+      },
+      {
+        "name": "arabic_analyze_text",
+        "description": "Analyze Arabic text — dialect detection, sentiment, entity extraction, keywords"
+      },
+      {
+        "name": "arabic_extract_entities",
+        "description": "Extract named entities from Arabic text (persons, orgs, locations, amounts)"
+      },
+      {
+        "name": "gcc_compliance_checklist",
+        "description": "Get regulatory compliance checklist by GCC country and business type"
+      },
+      {
+        "name": "gcc_regulatory_deadlines",
+        "description": "Track upcoming GCC regulatory deadlines (ZATCA, UAE CT, labor, licensing)"
+      },
+      {
+        "name": "gcc_convert_currency",
+        "description": "Convert between GCC currencies (all USD-pegged fixed rates)"
+      },
+      {
+        "name": "gcc_exchange_rates",
+        "description": "Get current exchange rates for GCC currencies"
+      }
+    ],
+    "resources": [
+      { "uri": "zatca://overview", "description": "ZATCA e-invoicing overview and Phase 2 requirements" },
+      { "uri": "uae://corporate-tax", "description": "UAE Corporate Tax rates, deadlines, and penalties" },
+      { "uri": "gcc://vat-rates", "description": "VAT rates for all 6 GCC countries" }
+    ]
+  },
+  "categories": ["compliance", "legal", "finance", "nlp", "government"],
+  "regions": ["middle-east", "gcc", "saudi-arabia", "uae", "kuwait", "bahrain", "oman", "qatar"],
+  "keywords": ["zatca", "arabic", "gcc", "compliance", "e-invoicing", "vat", "corporate-tax", "regulatory"],
+  "pricing": {
+    "free_tier": true,
+    "free_limit": "50 queries/month",
+    "starter": "$79/month",
+    "pro": "$349/month",
+    "enterprise": "$1,200/month"
+  },
+  "install": {
+    "npm": "npx gcc-intelligence-mcp",
+    "claude_desktop": {
+      "mcpServers": {
+        "gcc-intelligence": {
+          "command": "npx",
+          "args": ["gcc-intelligence-mcp"]
+        }
+      }
+    }
+  }
+}
