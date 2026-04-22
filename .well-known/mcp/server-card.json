@@ -66,10 +66,10 @@
   "keywords": ["zatca", "arabic", "gcc", "compliance", "e-invoicing", "vat", "corporate-tax", "regulatory"],
   "pricing": {
     "free_tier": true,
-    "free_limit": "50 queries/month",
-    "starter": "$79/month",
-    "pro": "$349/month",
-    "enterprise": "$1,200/month"
+    "free_limit": "50 queries/month, 3 tools",
+    "starter": "$79/month — all tools, 5K queries",
+    "pro": "$349/month — unlimited queries, priority support",
+    "enterprise": "$1,200/month — SLA, custom jurisdictions, API"
   },
   "install": {
     "npm": "npx gcc-intelligence-mcp",
