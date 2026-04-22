@@ -1,5 +1,5 @@
 {
-  "name": "@asl-throne/gcc-intelligence-mcp",
+  "name": "gcc-intelligence-mcp",
   "version": "0.1.0",
   "description": "MCP server providing GCC regulatory intelligence, ZATCA e-invoicing, Arabic NLP, and compliance tools for AI agents",
   "type": "module",
