@@ -3,17 +3,51 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { generateZatcaXml } from './tools/zatca.js';
 import { validateVatNumber, lookupCr } from './tools/registry.js';
 import { analyzeArabicText, extractEntities } from './tools/arabic-nlp.js';
 import { getComplianceChecklist, getDeadlines } from './tools/compliance.js';
 import { convertCurrency, getExchangeRates } from './tools/currency.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8'));
+const startTime = Date.now();
+let toolCallCount = 0;
+
 const server = new McpServer({
   name: 'gcc-intelligence-mcp',
-  version: '0.1.0',
+  version: pkg.version,
   description: 'GCC regulatory intelligence, ZATCA e-invoicing, Arabic NLP, and compliance tools for AI agents',
 });
+
+// ═══════════════════════════════════════════
+// HEALTH CHECK
+// ═══════════════════════════════════════════
+
+server.tool(
+  'health_check',
+  'Returns server health, uptime, version, and usage stats',
+  {},
+  async () => {
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({
+          status: 'healthy',
+          server: 'gcc-intelligence-mcp',
+          version: pkg.version,
+          uptime_seconds: Math.floor((Date.now() - startTime) / 1000),
+          tool_calls_served: toolCallCount,
+          tools_available: 11,
+          stateless: true,
+        }, null, 2),
+      }],
+    };
+  }
+);
 
 // ═══════════════════════════════════════════
 // ZATCA E-INVOICING TOOLS
@@ -40,7 +74,11 @@ server.tool(
     currency: z.enum(['SAR', 'USD', 'AED', 'KWD', 'BHD', 'OMR', 'QAR']).default('SAR'),
     note: z.string().optional().describe('Optional invoice note'),
   },
-  async (params) => generateZatcaXml(params)
+  async (params) => {
+    toolCallCount++;
+    try { return await generateZatcaXml(params); }
+    catch (e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message, tool: 'zatca_generate_invoice_xml' }) }] }; }
+  }
 );
 
 server.tool(
@@ -51,6 +89,8 @@ server.tool(
     phase: z.enum(['1', '2']).default('2').describe('ZATCA phase to validate against'),
   },
   async ({ xml_content, phase }) => {
+    toolCallCount++;
+    try {
     // Validation logic
     const issues = [];
 
@@ -77,6 +117,7 @@ server.tool(
         }, null, 2),
       }],
     };
+    } catch (e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message, tool: 'zatca_validate_invoice' }) }] }; }
   }
 );
 
@@ -88,6 +129,8 @@ server.tool(
     as_of_date: z.string().optional().describe('Date to check status for (YYYY-MM-DD, defaults to today)'),
   },
   async ({ annual_revenue_sar, as_of_date }) => {
+    toolCallCount++;
+    try {
     const waves = [
       { wave: 1, threshold: 3_000_000_000, deadline: '2023-01-01', status: 'ACTIVE' },
       { wave: 2, threshold: 500_000_000, deadline: '2023-07-01', status: 'ACTIVE' },
@@ -156,6 +199,7 @@ server.tool(
         }, null, 2),
       }],
     };
+    } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; }
   }
 );
 
@@ -170,7 +214,7 @@ server.tool(
     vat_number: z.string().describe('VAT or TIN registration number'),
     country: z.enum(['SA', 'AE', 'KW', 'BH', 'OM', 'QA']).describe('GCC country code'),
   },
-  async (params) => validateVatNumber(params)
+  async (params) => { toolCallCount++; try { return await validateVatNumber(params); } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; } }
 );
 
 server.tool(
@@ -180,7 +224,7 @@ server.tool(
     cr_number: z.string().describe('Commercial registration number'),
     country: z.enum(['SA', 'AE', 'KW', 'BH', 'OM', 'QA']).describe('GCC country code'),
   },
-  async (params) => lookupCr(params)
+  async (params) => { toolCallCount++; try { return await lookupCr(params); } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; } }
 );
 
 // ═══════════════════════════════════════════
@@ -194,7 +238,7 @@ server.tool(
     text: z.string().min(1).describe('Arabic text to analyze'),
     analyses: z.array(z.enum(['dialect', 'sentiment', 'entities', 'morphology', 'keywords'])).default(['dialect', 'sentiment', 'entities']).describe('Types of analysis to perform'),
   },
-  async (params) => analyzeArabicText(params)
+  async (params) => { toolCallCount++; try { return await analyzeArabicText(params); } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; } }
 );
 
 server.tool(
@@ -204,7 +248,7 @@ server.tool(
     text: z.string().min(1).describe('Arabic text to extract entities from'),
     entity_types: z.array(z.enum(['PERSON', 'ORG', 'LOC', 'DATE', 'MONEY', 'PHONE', 'EMAIL'])).optional().describe('Filter for specific entity types'),
   },
-  async (params) => extractEntities(params)
+  async (params) => { toolCallCount++; try { return await extractEntities(params); } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; } }
 );
 
 // ═══════════════════════════════════════════
@@ -220,7 +264,7 @@ server.tool(
     industry: z.string().optional().describe('Industry sector for industry-specific requirements'),
     employee_count: z.number().optional().describe('Number of employees (for labor law compliance)'),
   },
-  async (params) => getComplianceChecklist(params)
+  async (params) => { toolCallCount++; try { return await getComplianceChecklist(params); } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; } }
 );
 
 server.tool(
@@ -231,7 +275,7 @@ server.tool(
     categories: z.array(z.enum(['tax', 'labor', 'compliance', 'reporting', 'licensing'])).optional().describe('Filter by category'),
     days_ahead: z.number().min(1).max(365).default(90).describe('How many days ahead to look'),
   },
-  async (params) => getDeadlines(params)
+  async (params) => { toolCallCount++; try { return await getDeadlines(params); } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; } }
 );
 
 // ═══════════════════════════════════════════
@@ -246,7 +290,7 @@ server.tool(
     from: z.enum(['SAR', 'AED', 'KWD', 'BHD', 'OMR', 'QAR', 'USD', 'EUR', 'GBP']),
     to: z.enum(['SAR', 'AED', 'KWD', 'BHD', 'OMR', 'QAR', 'USD', 'EUR', 'GBP']),
   },
-  async (params) => convertCurrency(params)
+  async (params) => { toolCallCount++; try { return await convertCurrency(params); } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; } }
 );
 
 server.tool(
@@ -255,7 +299,7 @@ server.tool(
   {
     base: z.enum(['SAR', 'AED', 'KWD', 'BHD', 'OMR', 'QAR', 'USD']).default('USD'),
   },
-  async (params) => getExchangeRates(params)
+  async (params) => { toolCallCount++; try { return await getExchangeRates(params); } catch(e) { return { content: [{ type: 'text', text: JSON.stringify({ error: e.message }) }] }; } }
 );
 
 // ═══════════════════════════════════════════
