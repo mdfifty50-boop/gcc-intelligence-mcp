@@ -1,6 +1,6 @@
 {
   "name": "gcc-intelligence-mcp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "mcpName": "io.github.mdfifty50-boop/gcc-intelligence",
   "repository": {
     "type": "git",
@@ -41,6 +41,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0"
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@x402/mcp": "^2.10.0"
   }
 }
